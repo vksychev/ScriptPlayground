@@ -1,7 +1,7 @@
 #!/bin/bash
 
 datediff() {
-  local ldate=$last
+  local ldate=`date +"%m-%d-%Y"`
   y=${ldate##[0-9]*-}
   m=${ldate%%-[0-9]*}
   d=${ldate#[0-9]*-}
@@ -55,16 +55,18 @@ case "$1" in
           head=$(head -n1 $number_of_visits);
           num=${head#visits:}
           echo "$num trains left";
-          last=$(tail -n1 $number_of_visits);
+          lastVisit=$(tail -n1 $number_of_visits);
           end=`cat  $number_of_visits | head -n 3 | tail -n 1`
-          if [ "$end" = "$last" ]
+          if [ "$end" = "$lastVisit" ]
           then
             echo "You have no visits"
           else
             end=${end#end_date:}
-            last=${last#[0-9]*\ }
+            last=${lastVisit#*\ }
+            numlast=${lastVisit%%\ *}
             d=$(datediff)
-            echo "Last visit was: $last"
+            echo "Last visit was: $last."
+            echo "It was $numlast times."
             echo "Remain $d days"
           fi;;
   dec)    num=$(head -n1 $number_of_visits);
@@ -74,15 +76,21 @@ case "$1" in
           then
             dec="$2"
           fi
-          sed -i "1s/.*/visits:$((num-dec))/" $number_of_visits;
           date=`date +"%m-%d-%Y"`
           if ! [ -z "$3" ]
           then
             date="$3"
           fi
-          echo -n -e "$dec $date\n" >> $number_of_visits
-          echo "GOOD JOB!";;
-          echo "$((num-$dec)) trains left";;
+          if [ "$num" = "oo" ]
+          then
+            echo -n -e "$dec $date\n" >> $number_of_visits
+            echo "GOOD JOB!"
+          else
+            sed -i "1s/.*/visits:$((num-dec))/" $number_of_visits
+            echo -n -e "$dec $date\n" >> $number_of_visits
+            echo "GOOD JOB!"
+            echo "$((num-$dec)) trains left"
+          fi;;
   inc)    num=$(head -n1 $number_of_visits);
           num=${num#visits:}
           inc=1
