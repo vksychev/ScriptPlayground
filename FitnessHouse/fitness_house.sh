@@ -41,6 +41,7 @@ then
 fi
 
 case "$1" in
+
   set) echo "visits:$2">$number_of_visits
       echo "You have $2 visits"
       date=`date +"%m-%d-%Y"`
@@ -51,8 +52,7 @@ case "$1" in
       echo -n -e "start_date:$date\n" >> "$number_of_visits"
       echo "Start date: $date"
       endDate;;
-  status)
-          head=$(head -n1 $number_of_visits);
+  status) head=$(head -n1 $number_of_visits);
           num=${head#visits:}
           echo "$num trains left";
           lastVisit=$(tail -n1 $number_of_visits);
@@ -67,7 +67,27 @@ case "$1" in
             d=$(datediff)
             echo "Last visit was: $last."
             echo "It was $numlast times."
-            echo "Remain $d days"
+            echo "Remain $d days."
+          fi
+          if [ "$2" = "all" ]
+          then
+            echo "Your visits:"
+            a=0
+            while IFS='' read -r line || [[ -n "$line" ]]; do
+              if (("$a">2))
+              then
+                last=${line#*\ }
+                numlast=${line%%\ *}
+                visits="visits"
+                if [ "$numlast" = "1" ]
+                then
+                  visits="visit"
+                fi
+                echo "$last: $numlast $visits."
+              else
+                a="$a"+1
+              fi
+            done < "$number_of_visits"
           fi;;
   dec)    num=$(head -n1 $number_of_visits);
           num=${num#visits:}
